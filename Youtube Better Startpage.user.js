@@ -48,18 +48,16 @@ var LOADATTHESAMETIME = 10, // DEFAULT: 10 (higher numbers result into slower lo
 
 
 // a simple but optimized css selector
-var RxIsId = /^\#[\w-]+$/m,
-	RxIsCl = /^(\.[\w-]+)$/m,
+var RxIsCl = /^(\.[\w-]+)$/m,
 	RxIsTn = /^([\w-]+|\*)$/m,
 	ifNotNull = function (target) { return target == null ? [] : [target]; };
 function $ (selector, object, noerror) {
 	if (object == null) object = document;
 	
 	try {
-		var result = (RxIsId.test( selector ) && object.getElementById) ? ifNotNull( object.getElementById(selector.substr(1)) )
-		            : RxIsCl.test( selector ) ? object.getElementsByClassName( selector.substr(1).replace(/\./g, " ") )
-		            : RxIsTn.test( selector ) ? object.getElementsByTagName( selector )
-		            : object.querySelectorAll( selector );
+		var result = RxIsCl.test( selector ) ? object.getElementsByClassName( selector.substr(1).replace(/\./g, " ") )
+		           : RxIsTn.test( selector ) ? object.getElementsByTagName( selector )
+		           : object.querySelectorAll( selector );
 		
 		if (result.length === 0 && !noerror) console.warn('Selector "' + selector + '" returned empty result. Could be an error!');
 		return Array.prototype.slice.call( result );
@@ -81,7 +79,7 @@ function callForEach (selector, callback, limit) {
 		function nodeInserted () {
 			
 			var i = elements.length;
-			elements = $( selector );
+			elements = $( selector, document, true );
 			
 			// call the callback for all new elements that haven't been found yet
 			for (var ilen = elements.length; i < ilen && (!limit || i < limit); ++i) {
@@ -168,11 +166,10 @@ function createDOM (content, bodyRx) {
 	// rename resources (so they won't load) and remove every tag that never has informations and just wasts performance
 	content = content.replace(imgRx, "data-src$1").replace(remoRx, "");
 	
-	var div = document.createElement("div");
-	div.style.display = "none";
-	div.innerHTML = content;
-	
-	return div;
+	// create a new document
+	var subDocument = document.implementation.createHTMLDocument("subdom");
+	subDocument.body.innerHTML = content;
+	return subDocument.body;
 }
 
 // removes unneccesarry spaces at the beginning and ending of a string
@@ -184,7 +181,7 @@ function strip (string) {
 var objLoop = ("keys" in Object)
 	? function (obj, callback, context) {
 		var keys = Object.keys(obj), k = 0, klen = keys.length;
-		for(; k < klen; ++k) if (callback.call(context, obj[keys[k]], keys[k]) === false) break;
+		for(; k < klen && callback.call(context, obj[keys[k]], keys[k]) !== false; ++k) {}
 	}
 	: function (obj, callback, context) {
 		for (var name in obj) if (obj.hasOwnProperty(name) && callback.call(context, obj[name], name) === false) break;
