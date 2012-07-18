@@ -1,3 +1,4 @@
+
 // ==UserScript==
 // @name            YouTube Better Startpage
 // @description     gets the old order of the Startpage of YouTube back
@@ -167,9 +168,9 @@ function createDOM (content, bodyRx) {
 	content = content.replace(imgRx, "data-src$1").replace(remoRx, "");
 	
 	// create a new document
-	var subDocument = document.implementation.createHTMLDocument("subdom");
-	subDocument.body.innerHTML = content;
-	return subDocument.body;
+	var subDocument = document.createElement("div");
+	subDocument.innerHTML = content;
+	return subDocument;
 }
 
 // removes unneccesarry spaces at the beginning and ending of a string
@@ -1277,3 +1278,4 @@ if ((lastUpdate + UPDATEINTERVAL) < Date.now()) setTimeout(function () {
 }, UPDATEDELAY);
 
 })( window.unsafeWindow || window );
+
