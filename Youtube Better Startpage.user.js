@@ -6,7 +6,7 @@
 // @include         https://*youtube.com*
 // @run-at          document-start
 // @unwrap
-// @version         2012.6-1
+// @version         2012.7-1
 // ==/UserScript==
 
 /**
@@ -37,13 +37,14 @@ var LOADATTHESAMETIME = 10, // DEFAULT: 10 (higher numbers result into slower lo
 	ITEMSPERROW = 5, // DEFAULT: 5
 	ITMESPERROWWITHOUTSIDEBAR = 7, // DEFAULT: 7
 	MAXITEMSPERSUB = 35, // DEFAULT: 35 (should be dividable with ITEMSPERROW AND ITMESPERROWWITHOUTSIDEBAR)
+	KEEPFORSAFETY = 5, // DEFAULT: 5
 	SCREENLOADTHREADSHOLD = 1500, // DEFAULT: 1000
 	UPDATEINTERVAL = 1000*60*60*24, // DEFAULT: 1000*60*60*24 (1 day)
 	UPDATEDELAY = 5000, // DEFAULT: 5000 (5 sek)
 
 
 // resources
-	VERSION = "2012.6-1",
+	VERSION = "2012.7-1",
 	UPDATEURL = "http://sett.bplaced.net/userscripts/YTBSP/version.json",
 	AJAXLOADER = '<img alt="..." class="ytbsp-ajaxloader" src="data:image/gif;base64,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" />';
 
@@ -546,54 +547,68 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 			
 			// if have an url request the page
 			var self = this;
-			if (this.updateurl) ajax(this.updateurl, function (response) {
+			if (this.updateurl) {
+				ajax(this.updateurl, function (response) {
 				
-				var dom = createDOM(response, /<ol[^>]+id="vm-playlist-video-list-ol"[^>]*>([\s\S]*)<\/ol>/i);
-				self.videos = {};
+					var dom = createDOM(response, /<ol[^>]+id="vm-playlist-video-list-ol"[^>]*>([\s\S]*)<\/ol>/i);
+					var oldVideos = self.videos;
+					self.videos = {};
 				
-				// get the video items
-				$( ".vm-video-item", dom, true ).forEach(function (item) {
+					// get the video items
+					$( ".vm-video-item", dom, true ).forEach(function (item) {
 
-					var thumb  = $(".yt-thumb-clip img", item)[0],
-						time   = $(".video-time", item)[0],
-						title  = $(".vm-video-title a", item)[0],
-						upload = $(".vm-video-info:nth-of-type(2)", item)[0],
-						clicks = $(".vm-video-metrics dd:first-of-type", item)[0],
-						vid = title.href.match(/v=([^&]{11})/)[1];
+						var thumb  = $(".yt-thumb-clip img", item)[0],
+							time   = $(".video-time", item)[0],
+							title  = $(".vm-video-title a", item)[0],
+							upload = $(".vm-video-info:nth-of-type(2)", item)[0],
+							clicks = $(".vm-video-metrics dd:first-of-type", item)[0],
+							vid = title.href.match(/v=([^&]{11})/)[1];
 
-					self.videos[vid] = getVideo(self, {
-						vid:   vid,
-						title: strip(title.textContent),
-						thumb:    thumb  ? thumb.getAttribute("data-src") : "",
-						duration: time   ? strip(time.textContent)        : "0:00",
-						uploaded: upload ? strip(upload.textContent)      : "not found",
-						clicks:   clicks ? strip(clicks.textContent)      : "NaN"
+						self.videos[vid] = getVideo(self, {
+							vid:   vid,
+							title: strip(title.textContent),
+							thumb:    thumb  ? thumb.getAttribute("data-src") : "",
+							duration: time   ? strip(time.textContent)        : "0:00",
+							uploaded: upload ? strip(upload.textContent)      : "not found",
+							clicks:   clicks ? strip(clicks.textContent)      : "NaN"
+						});
+						
+						// if this video was there before
+						if (oldVideos.hasOwnProperty( vid )) {
+							delete oldVideos[vid];
+						}
 					});
-				});
+					
+					// attach KEEPFORSAFETY old Videos to the list
+					var count = 0;
+					objLoop(oldVideos, function (video, vid) {
+						if (!self.videos.hasOwnProperty( vid ) && count++ < KEEPFORSAFETY) {
+							self.videos[vid] = video;
+						}
+					});
 				
-				// now extend the information we already have
-				var headerData = response.match(/<div[^>]+id="vm-page-subheader"[^>]+>\s*<h3>\s*<a[^>]+href="([^"]*)"/i);
-				self.href = headerData == null ? "Javascript: alert('url not found, sorry!')" : headerData[1];
-				self.titleObj.href = self.href;
-				//self.href = $("#vm-page-subheader h3 a", dom)[0].href;
-				//self.titleObj.href = self.href;
+					// now extend the information we already have
+					var headerData = response.match(/<div[^>]+id="vm-page-subheader"[^>]+>\s*<h3>\s*<a[^>]+href="([^"]*)"/i);
+					self.href = headerData == null ? "Javascript: alert('url not found, sorry!')" : headerData[1];
+					self.titleObj.href = self.href;
 				
-				// remove the dom to reduce memory use
-				dom = null;
+					// remove the dom to reduce memory use
+					dom = null;
 				
-				// rebuild the list
-				self.buildList();
-				self.removeLoader();
+					// rebuild the list
+					self.buildList();
+					self.removeLoader();
 			
-				// callback
-				if (callback) callback();
-			},
-			// ON FAILURE
-			function () {
-				self.titleObj.appendChild(document.createTextNode(" (update failed)"));
+					// callback
+					if (callback) callback();
+				},
+				// ON FAILURE
+				function () {
+					self.titleObj.appendChild(document.createTextNode(" (update failed)"));
 				
-				if (callback) callback();
-			});
+					if (callback) callback();
+				});
+			}
 		},
 		
 		removeLoader: function () {
@@ -981,12 +996,16 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	function saveList () {
 		
 		var saveObj = {};
+		var saveCount = 0;
 		
 		objLoop(subs, function (sub, name) {
 			saveObj[name] = sub.getSaveable();
+			++saveCount;
 		});
 		
-		localStorage.setItem("YTBSP", JSON.stringify(saveObj));
+		if (saveCount >= 2) {
+			localStorage.setItem("YTBSP", JSON.stringify(saveObj));
+		}
 	}
 	
 	
