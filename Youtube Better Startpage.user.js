@@ -598,15 +598,21 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 					// rebuild the list
 					self.buildList();
 					self.removeLoader();
+					
+					// mark row as updated
+					self.row.className += " updated";
 			
 					// callback
 					if (callback) callback();
+					cleanUp();
 				},
 				// ON FAILURE
 				function () {
 					self.titleObj.appendChild(document.createTextNode(" (update failed)"));
+					self.removeLoader();
 				
 					if (callback) callback();
+					cleanUp();
 				});
 			}
 		},
@@ -749,17 +755,21 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	
 	// this function will be called after all subscriptions are loaded
 	function cleanUp () {
-		console.log("Do Cleanup");
 		
-		// remove the seen list
-		localStorage.removeItem("YTBSPseen");
-		localStorage.removeItem("YTBSPunseen");
-		localStorage.removeItem("YTBSPremoved");
-		localStorage.removeItem("YTBSPunremoved");
-		seenVideos = {};
-		unseenVideos = {};
-		removedVideos = {};
-		unremovedVideos = {};
+		// only do cleanup if there are no more unupdated subscriptions
+		if ($(".ytbsp-subscription:not(.updated)").length <= 0) {
+			console.log("Do Cleanup");
+		
+			// remove the seen list
+			localStorage.removeItem("YTBSPseen");
+			localStorage.removeItem("YTBSPunseen");
+			localStorage.removeItem("YTBSPremoved");
+			localStorage.removeItem("YTBSPunremoved");
+			seenVideos = {};
+			unseenVideos = {};
+			removedVideos = {};
+			unremovedVideos = {};
+		}
 	}
 	
 	
