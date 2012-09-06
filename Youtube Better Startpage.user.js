@@ -6,7 +6,7 @@
 // @include         https://*youtube.com*
 // @run-at          document-start
 // @unwrap
-// @version         2012.7-3
+// @version         2012.9-2
 // ==/UserScript==
 
 /**
@@ -45,7 +45,7 @@ var LOADATTHESAMETIME = 10, // DEFAULT: 10 (higher numbers result into slower lo
 
 
 // resources
-	VERSION = "2012.9-1",
+	VERSION = "2012.9-2",
 	UPDATEURL = "http://sett.bplaced.net/userscripts/YTBSP/version.json",
 	AJAXLOADER = '<img alt="..." class="ytbsp-ajaxloader" src="data:image/gif;base64,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" />';
 
@@ -250,7 +250,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	var content, old;
 	
 	// create an div for us
-	var headtext = '<span class="func shownative">[toggle native startpage]</span> <span class="func unremove">[reset removed videos]</span> <span class="func backup">[backup]</span> '
+	var headtext = '<span class="func shownative">[toggle native startpage]</span> <span class="func unremove">[reset removed videos]</span> <span class="func backup">[backup video info]</span> '
 		+ '<input type="checkbox" class="func sort" ' + (sortSubs ? 'checked="checked" ':'') + '/><span class="func sort">Sort videos</span>'
 		+ '<input type="checkbox" class="func hide" ' + (hideSubs ? '':'checked="checked" ') + '/><span class="func hide">Show empty</span>'
 		+ '<input type="checkbox" class="func side" ' + (showSide ? 'checked="checked" ':'') + '/><span class="func side">Show sidebar</span>',
@@ -259,7 +259,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	maindiv.className = showSide ? "" : "large";
 	maindiv.innerHTML =
 		  '<div id="ytbsp-header">' + headtext + '</div>'
-		+ '<ul id="ytbsp-subs"><li>' + AJAXLOADER + ' Loading subscription list</li></ul>'
+		+ '<ul id="ytbsp-subs"><li id="ytbsp-lsl">' + AJAXLOADER + ' Loading subscription list</li></ul>'
 		+ '<div id="ytbsp-footer">' + headtext + '</div>'
 		
 		+ '<div id="ytbsp-modal-darken">'
@@ -346,13 +346,27 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	
 	// backup
 	function openBackupDialog () {
+		if ($("#ytbsp-lsl").length) {
+			alert( "Not so fast. Let it load the sub list first." );
+			return;
+		}
+	
 		var content = document.createElement( "div" );
 		
 		var header = document.createElement( "h1" );
-		header.textContent = "Backup";
+		header.textContent = "Backup video information";
 		content.appendChild( header );
 		
 		var text = document.createElement( "p" );
+		text.innerHTML = "This Feature allows you to save which videos you have seen and removed and import them again on another browser/computer"
+			+ " or just to make save you don't loose these informations over night.";
+		content.appendChild( text );
+		
+		header = document.createElement( "h1" );
+		header.textContent = "How do I do this?";
+		content.appendChild( header );
+		
+		text = document.createElement( "p" );
 		text.innerHTML = "Just copy the content of the following textbox and save it somewhere.<br />"
 			+ "To import it again copy it into the textbox and press import data.<br />"
 			+ "Note that this information will be merged with the already existing one so you can savely import old/multible backups. "
@@ -370,8 +384,12 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		content.appendChild( bottom );
 		 
 		$( ".save-import", bottom )[0].addEventListener("click", function () {
-			var data = JSON.parse( document.getElementById( "export-import-textarea" ).value );
-			integrateModifiedVideos( data );
+			try {
+				var data = JSON.parse( document.getElementById( "export-import-textarea" ).value );
+				integrateModifiedVideos( data );
+			} catch (e) {
+				alert( "The import data is invalid!" );
+			}
 		});
 		
 		modal( content );
