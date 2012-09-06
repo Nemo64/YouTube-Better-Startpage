@@ -354,7 +354,8 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		
 		var text = document.createElement( "p" );
 		text.innerHTML = "Just copy the content of the following textbox and save it somewhere.<br />"
-			+ "To import it again copy it into the textbox and press import data."
+			+ "To import it again copy it into the textbox and press import data.<br />"
+			+ "Note that this information will be merged with the already existing one so you can savely import old/multible backups.";
 		content.appendChild( text );
 		
 		var exportArea = document.createElement( "textarea" );
