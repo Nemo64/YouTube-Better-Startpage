@@ -52,8 +52,7 @@ var LOADATTHESAMETIME = 10, // DEFAULT: 10 (higher numbers result into slower lo
 
 // a simple but optimized css selector
 var RxIsCl = /^(\.[\w-]+)$/m,
-	RxIsTn = /^([\w-]+|\*)$/m,
-	ifNotNull = function (target) { return target == null ? [] : [target]; };
+	RxIsTn = /^([\w-]+|\*)$/m;
 function $ (selector, object, noerror) {
 	if (object == null) object = document;
 	
@@ -180,6 +179,26 @@ function strip (string) {
 	return string.replace(/^[\s]*|[\s]*$|\s+(?=\s)/gm, "");
 }
 
+function closeModal () {
+	var modal = document.getElementById( "ytbsp-modal-darken" );
+	if (modal) {
+		modal.style.display = "none";
+		modal.style.opacity = "0";
+	}
+}
+
+function modal ( content ) {
+	var innerModal = document.getElementById( "ytbsp-modal-content" );
+	var modal = document.getElementById( "ytbsp-modal-darken" );
+	if (!innerModal || !modal) throw new Error( "Modal disapeared" );
+	innerModal.innerHTML = "";
+	innerModal.appendChild( content );
+	modal.style.display = "block";
+	setTimeout(function () {
+		modal.style.opacity = "1";
+	}, 10);
+}
+
 // an object loop that uses what the browser can
 var objLoop = ("keys" in Object)
 	? function (obj, callback, context) {
@@ -231,9 +250,9 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	var content, old;
 	
 	// create an div for us
-	var headtext = '<span class="func shownative">[toggle native startpage]</span> <span class="func unremove">[reset removed videos]</span> '
+	var headtext = '<span class="func shownative">[toggle native startpage]</span> <span class="func unremove">[reset removed videos]</span> <span class="func backup">[backup]</span> '
 		+ '<input type="checkbox" class="func sort" ' + (sortSubs ? 'checked="checked" ':'') + '/><span class="func sort">Sort videos</span>'
-		+ '<input type="checkbox" class="func hide" ' + (hideSubs ? '':'checked="checked" ') + '/><span class="func hide">Show empty subscriptions</span>'
+		+ '<input type="checkbox" class="func hide" ' + (hideSubs ? '':'checked="checked" ') + '/><span class="func hide">Show empty</span>'
 		+ '<input type="checkbox" class="func side" ' + (showSide ? 'checked="checked" ':'') + '/><span class="func side">Show sidebar</span>',
 		maindiv = document.createElement("div");
 	maindiv.id = "YTBSP";
@@ -241,7 +260,16 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	maindiv.innerHTML =
 		  '<div id="ytbsp-header">' + headtext + '</div>'
 		+ '<ul id="ytbsp-subs"><li>' + AJAXLOADER + ' Loading subscription list</li></ul>'
-		+ '<div id="ytbsp-footer">' + headtext + '</div>';
+		+ '<div id="ytbsp-footer">' + headtext + '</div>'
+		
+		+ '<div id="ytbsp-modal-darken">'
+		+ '<div id="ytbsp-modal"><div id="ytbsp-modal-content"></div>'
+		+ '<div style="clear: both"></div></div></div>';
+	maindiv.lastChild.addEventListener( "click", function (e) {
+		if (e.target == this || /close\-modal/.test(e.target.className)) {
+			closeModal();
+		}
+	}, false );
 	
 	
 	
@@ -296,6 +324,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		obj.addEventListener("click", shownative, false);
 	});
 	
+	// unremove videos button
 	function unremoveAllVideos () {
 		var toRebuild = {};
 		objLoop(allVideos, function (video) {
@@ -313,6 +342,40 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	}
 	$(".func.unremove", maindiv).forEach(function (obj) {
 		obj.addEventListener("click", unremoveAllVideos, false);
+	});
+	
+	// backup
+	function openBackupDialog () {
+		var content = document.createElement( "div" );
+		
+		var header = document.createElement( "h1" );
+		header.textContent = "Backup";
+		content.appendChild( header );
+		
+		var text = document.createElement( "p" );
+		text.innerHTML = "Just copy the content of the following textbox and save it somewhere.<br />"
+			+ "To import it again copy it into the textbox and press import data."
+		content.appendChild( text );
+		
+		var exportArea = document.createElement( "textarea" );
+		exportArea.id = "export-import-textarea";
+		exportArea.textContent = JSON.stringify( getModifiedVideos() );
+		content.appendChild( exportArea );
+		
+		var bottom = document.createElement( "div" );
+		bottom.innerHTML = '<input type="submit" class="close-modal" value="close" style="float:right" />'
+		 + '<input type="submit" class="save-import close-modal" value="import data" style="float:right" />';
+		content.appendChild( bottom );
+		 
+		$( ".save-import", bottom )[0].addEventListener("click", function () {
+			var data = JSON.parse( document.getElementById( "export-import-textarea" ).value );
+			integrateModifiedVideos( data );
+		});
+		
+		modal( content );
+	}
+	$(".func.backup", maindiv).forEach(function (obj) {
+		obj.addEventListener("click", openBackupDialog, false);
 	});
 	
 	// sort videos buttons
@@ -747,6 +810,28 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		// do a cleanup after a delay
 		if (doCount) setTimeout(cleanUp, 20);
 	}
+	// get { vid: (0=removed;1=seen) }
+	function getModifiedVideos () {
+		var data = {};
+		objLoop(allVideos, function (video, vid) {
+			if (video.isRemoved()) {
+				data[vid] = 0;
+			} else if (video.isSeen()) {
+				data[vid] = 1;
+			}
+		});
+		return data;
+	}
+	function integrateModifiedVideos (data) {
+		objLoop(data, function (video, vid) {
+			if (video === 0) {
+				removedVideos[vid] = true;
+			} else if (video === 1) {
+				seenVideos[vid] = true;
+			}
+		});
+		integrateChangedVideos();
+	}
 	
 	function registerChangeEvent () {
 		window.addEventListener("storage", function (e) {
@@ -1170,7 +1255,13 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		// ajax loader
 		+ '.ytbsp-loaderph { display: block; float: left; vertical-align: middle; width: 16px; height: 16px;'
 			+ '-webkit-transition: width 1s; -moz-transition: width 1s; -o-transition: width 1s; }'
-		+ '.ytbsp-ajaxloader { vertical-align: middle; -webkit-transition: opacity .2s; -moz-transition: opacity .2s; -o-transition: opacity .2s; }';
+		+ '.ytbsp-ajaxloader { vertical-align: middle; -webkit-transition: opacity .2s; -moz-transition: opacity .2s; -o-transition: opacity .2s; }'
+		
+		// modal
+		 + '#ytbsp-modal-darken { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,.4); z-index: 1000;'
+		 	+ ' -webkit-transition: opacity .2s; -moz-transition: opacity .2s; -o-transition: opacity .2s; opacity: 0; overflow: auto; display: none; }'
+		 + '#ytbsp-modal { margin: 0 auto; width: 600px; min-height: 20px; margin-top: 30px; padding: 5px; background: #fff; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,.4); }'
+		 + '#ytbsp-modal textarea { width: 595px; height: 500px; resize: none; margin: 20px 0; }';
 		
 		document.head.appendChild(css);
 	}
