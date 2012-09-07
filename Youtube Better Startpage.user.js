@@ -775,7 +775,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		
 		if (typeof string === "string") {
 			var parts = string.match(/.{11}/g);
-			parts.forEach(function (part) {
+			(parts || []).forEach(function (part) {
 				result[part] = true;
 			});
 		}
@@ -794,12 +794,14 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		objLoop(seenVideos, function (_, vid) {
 			if (allVideos.hasOwnProperty(vid)) {
 				allVideos[vid].see(true);
+				delete seenVideos[vid];
 				++doCount;
 			}
 		});
 		objLoop(unseenVideos, function (_, vid) {
 			if (allVideos.hasOwnProperty(vid)) {
 				allVideos[vid].unsee(true);
+				delete unseenVideos[vid];
 				++doCount;
 			}
 		});
@@ -810,6 +812,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 				allVideos[vid].subscriptions.forEach(function (subscription) {
 					toRebuild[subscription.name] = subscription;
 				});
+				delete removedVideos[vid];
 				++doCount;
 			}
 		});
@@ -819,6 +822,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 				allVideos[vid].subscriptions.forEach(function (subscription) {
 					toRebuild[subscription.name] = subscription;
 				});
+				delete unremovedVideos[vid];
 				++doCount;
 			}
 		});
@@ -864,14 +868,18 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	getChangedVideos();
 	
 	
-	// this function will be called after all subscriptions are loaded
+	// this function has to remove the seen and removed information
 	function cleanUp () {
+	
+		refresh( seenVideos, "YTBSPseen" );
+		refresh( unseenVideos, "YTBSPunseen" );
+		refresh( removedVideos, "YTBSPremoved" );
+		refresh( unremovedVideos, "YTBSPunremoved" );
 		
 		// only do cleanup if there are no more unupdated subscriptions
 		if ($(".ytbsp-subscription:not(.updated)", document, true).length <= 0) {
-			console.log("Do Cleanup");
+			console.log("Do full Cleanup");
 		
-			// remove the seen list
 			localStorage.removeItem("YTBSPseen");
 			localStorage.removeItem("YTBSPunseen");
 			localStorage.removeItem("YTBSPremoved");
@@ -881,6 +889,15 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 			removedVideos = {};
 			unremovedVideos = {};
 		}
+	}
+	
+	// updates the list of vids that are seen/unseen etc.
+	function refresh ( list, saveUnder ) {
+		var vids = [];
+		objLoop(list, function (_, vid) {
+			vids.push( vid );
+		});
+		localStorage.setItem( saveUnder, vids.join("") );
 	}
 	
 	
