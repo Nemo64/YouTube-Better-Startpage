@@ -1001,6 +1001,10 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 					var marker = $(".ytbsp-seemarker", thumb)[0];
 					marker.textContent = "already seen";
 					marker.className += " seen";
+					
+					if (hideSeen) {
+						subscription.buildList();
+					}
 				}
 			}, this);
 			if (!privat) localStorage.setItem("YTBSPseen", (localStorage.getItem("YTBSPseen") || "") + this.vid);
