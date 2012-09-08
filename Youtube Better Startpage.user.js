@@ -492,7 +492,6 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		// put unsave text in an append
 		this.titleObj.textContent = name;
 		subList.appendChild(this.row);
-		this.offsetTop = this.videoList.offsetTop;
 		
 		
 		
@@ -728,10 +727,12 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 				return this.isInView;
 			}
 			this.lastViewCheck = lastScroll;
+			var offsetTop = this.videoList ? this.videoList.offsetTop : 0;
 			
 			return this.isInView = (this.videoList
-				&& this.offsetTop - SCREENLOADTHREADSHOLD < screenBottom
-				&& this.offsetTop + SCREENLOADTHREADSHOLD > screenTop);
+				&& offsetTop - SCREENLOADTHREADSHOLD < screenBottom
+				&& offsetTop + SCREENLOADTHREADSHOLD > screenTop
+			);
 		},
 		
 		// returns an object that can be saved as json
