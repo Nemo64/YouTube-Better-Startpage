@@ -229,13 +229,13 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		screenBottom = screenTop + window.innerHeight,
 		
 		cache = localStorage.getItem("YTBSP"),
-		sortSubs = localStorage.getItem("YTBSPsort"),
+		hideSeen = localStorage.getItem("YTBSPhideSeen"),
 		hideSubs = localStorage.getItem("YTBSPhide"),
 		showSide = localStorage.getItem("YTBSPshowSide");
 	
 	// parse the config
-	sortSubs = sortSubs == null || sortSubs == "1";
-	hideSubs = hideSubs == null || hideSubs == "1";
+	hideSeen = hideSeen == "1";
+	hideSubs = hideSubs == "1";
 	showSide = showSide == null || showSide == "1";
 	
 	// if we have a cache parse it
@@ -251,7 +251,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	
 	// create an div for us
 	var headtext = '<span class="func shownative">[toggle native startpage]</span> <span class="func unremove">[reset removed videos]</span> <span class="func backup">[backup video info]</span> '
-		+ '<input type="checkbox" class="func sort" ' + (sortSubs ? 'checked="checked" ':'') + '/><span class="func sort">Sort videos</span>'
+		+ '<input type="checkbox" class="func hideSeen" ' + (hideSeen ? 'checked="checked" ':'') + '/><span class="func hideSeen">Hide seen videos</span>'
 		+ '<input type="checkbox" class="func hide" ' + (hideSubs ? '':'checked="checked" ') + '/><span class="func hide">Show empty</span>'
 		+ '<input type="checkbox" class="func side" ' + (showSide ? 'checked="checked" ':'') + '/><span class="func side">Show sidebar</span>',
 		maindiv = document.createElement("div");
@@ -327,10 +327,10 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	// unremove videos button
 	function unremoveAllVideos () {
 		var toRebuild = {};
-		objLoop(allVideos, function (video) {
+		objLoop(allVideos, function (video, vid) {
 			if (video.isRemoved()) {
 				video.unremove();
-				allVideos[vid].subscriptions.forEach(function (subscription) {
+				video.subscriptions.forEach(function (subscription) {
 					toRebuild[subscription.name] = subscription;
 				});
 			}
@@ -398,13 +398,17 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		obj.addEventListener("click", openBackupDialog, false);
 	});
 	
-	// sort videos buttons
-	function sortVideos () {
-		localStorage.setItem("YTBSPsort", sortSubs ? "0" : "1");
-		location.reload();
+	// hide seen videos buttons
+	function hideSeenVideos () {
+		localStorage.setItem("YTBSPhideSeen", hideSeen ? "0" : "1");
+		hideSeen = !hideSeen;
+		objLoop(subs, function (sub) {
+			sub.buildList();
+		});
+		$("input.func.hideSeen", maindiv).forEach(function (element) { element.checked = hideSeen; });
 	}
-	$(".func.sort", maindiv).forEach(function (obj) {
-		obj.addEventListener("click", sortVideos, false);
+	$(".func.hideSeen", maindiv).forEach(function (obj) {
+		obj.addEventListener("click", hideSeenVideos, false);
 	});
 	
 	// hide empty subscriptions button
@@ -838,9 +842,9 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	function getModifiedVideos () {
 		var data = {};
 		objLoop(allVideos, function (video, vid) {
-			if (video.isRemoved()) {
+			if (video.removed) {
 				data[vid] = 0;
-			} else if (video.isSeen()) {
+			} else if (video.seen) {
 				data[vid] = 1;
 			}
 		});
@@ -962,7 +966,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		},
 		
 		isRemoved: function () {
-			return this.removed;
+			return this.removed || (hideSeen && this.isSeen());
 		},
 		
 		remove: function (privat) {
@@ -1080,7 +1084,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		
 		getSaveable: function () {
 			
-			if (this.isRemoved()) return {
+			if (this.removed) return {
 				vid:      this.vid,
 				seen:     this.seen,
 				removed:  1
@@ -1182,21 +1186,18 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		});
 		
 		// now sort the subscriptions
-		if (sortSubs) {
-			
-			// get the video item names for sorting
-			var names = {}, count = 1;
-			$("#vm-video-list-container .yt-user-name", dom).forEach(function (item) {
-				var name = strip(item.textContent);
-				if (!names.hasOwnProperty(name)) {
-					names[name] = count++;
-				}
-			});
-			
-			subscriptions.sort(function (a, b) {
-				return (names[a.name] || count) - (names[b.name] || count);
-			});
-		}
+		// get the video item names for sorting
+		var names = {}, count = 1;
+		$("#vm-video-list-container .yt-user-name", dom).forEach(function (item) {
+			var name = strip(item.textContent);
+			if (!names.hasOwnProperty(name)) {
+				names[name] = count++;
+			}
+		});
+		
+		subscriptions.sort(function (a, b) {
+			return (names[a.name] || count) - (names[b.name] || count);
+		});
 		
 		// create subscription objects
 		subscriptions.forEach(function (sub) {
