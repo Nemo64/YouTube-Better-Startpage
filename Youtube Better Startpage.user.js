@@ -1047,8 +1047,8 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 				+ '<img class="ytbsp-thumb" ' + (inView ? "" : "data-") + 'src="' + this.thumb + '" /></a>'
 				+ '<button onclick=";return false;" title="watch later" type="button" ' // freak'in youtube button 
 					+ 'class="addto-button video-actions addto-watch-later-button yt-uix-button yt-uix-button-default yt-uix-button-short yt-uix-tooltip"'
-					+ ' data-video-ids="' + this.vid + '" role="button"><span class="yt-uix-button-content"><span class="addto-label">watch later</span>'
-					+ '<span class="addto-label-error">error</span><img src="//s.ytimg.com/yt/img/pixel-vfl3z5WfW.gif"></span></button>'
+					+ ' data-video-ids="' + this.vid + '" role="button" data-tooltip-text="watch later"><span class="yt-uix-button-content">'
+					+ '<img src="//s.ytimg.com/yt/img/pixel-vfl3z5WfW.gif"></span></button>'
 				+ '<div class="video-time">' + this.duration + '</div></div><a class="vlink" href="/watch?v=' + this.vid + '"></a>'
 				+ '<div class="ytbsp-seemarker' + (this.isSeen() ? ' seen">already seen' : '">mark as seen') + '</div>'
 				+ '<p class="ytbsp-views">' + this.clicks + ' Views</p><p class="ytbsp-uploaded">' + this.uploaded + '</p>';
