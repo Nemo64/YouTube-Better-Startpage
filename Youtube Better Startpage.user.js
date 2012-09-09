@@ -256,7 +256,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		+ '<input type="checkbox" class="func side" ' + (showSide ? 'checked="checked" ':'') + '/><span class="func side">Show sidebar</span>',
 		maindiv = document.createElement("div");
 	maindiv.id = "YTBSP";
-	maindiv.className = showSide ? "" : "large";
+	maindiv.className = (showSide ? "" : "large") + " " + (hideSeen ? "hideseen" : "");
 	maindiv.innerHTML =
 		  '<div id="ytbsp-header">' + headtext + '</div>'
 		+ '<ul id="ytbsp-subs"><li id="ytbsp-lsl">' + AJAXLOADER + ' Loading subscription list</li></ul>'
@@ -402,6 +402,11 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	function hideSeenVideos () {
 		localStorage.setItem("YTBSPhideSeen", hideSeen ? "0" : "1");
 		hideSeen = !hideSeen;
+		if (hideSeen) {
+			maindiv.className += " hideseen";
+		} else {
+			maindiv.className = maindiv.className.replace(/(^|\s)hideseen(\s|$)/, "");
+		}
 		objLoop(subs, function (sub) {
 			sub.buildList();
 		});
@@ -432,7 +437,11 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 			subscription.buildList();
 		});
 		$("input.func.side", maindiv).forEach(function (element) { element.checked = showSide; });
-		maindiv.className = showSide ? "" : "large";
+		if (showSide) {
+			maindiv.className = maindiv.className.replace(/(^| )large( |$)/, "");
+		} else {
+			maindiv.className += " large";
+		}
 		callForEach("#video-sidebar", function (sidebar) {
 			sidebar.style.display = showSide ? "block" : "none";
 		}, 1);
@@ -459,9 +468,6 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		// some vars
 		this.videos = {};
 		this.href = cache[name] ? cache[name].href : "";
-		this.updateurl = "";
-		this.showall = false;
-		this.needsUpdate = true;
 		
 		// if videos are in the cache make instances
 		if (cache[name] && cache[name].videos) {
@@ -480,8 +486,9 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		
 		// create content
 		this.row.innerHTML = '<div class="ytbsp-subinfo">'
-		+ '<div class="right"><span class="func removeall">[remove videos]</span> <span class="func reset">[unremove videos]</span>'
-		+ ' <span class="func allseen">[mark all as seen]</span> <span class="func showmore">[show more thumbs &gt; ]</span></div>'
+		+ '<div class="right"><span class="func removeall">[remove all]</span> <span class="func reset">[unremove all]</span>'
+		+ ' <span class="func allseen">[mark all as seen]</span> <span class="func showseen">[show seen > ]</span>'
+		+ ' <span class="func showmore">[show more &gt; ]</span></div>'
 		+ '<div class="ytbsp-loaderph">' + AJAXLOADER + '</div><h3 class="ytbsp-subtitle"><a href="'+this.href+'"></a></h3>'
 		+ '</div><ul class="ytbsp-subvids"></ul><div style="clear:both"></div>';
 		
@@ -534,13 +541,23 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 			obj.addEventListener("click", seeAll, false);
 		});
 		
+		// function to show seen videos
+		function showSeenToggle () {
+			self.ignoreHideSeen = !self.ignoreHideSeen;
+			this.textContent = self.ignoreHideSeen ? "[hide seen < ]" : "[show seen > ]";
+			self.buildList();
+		}
+		$(".func.showseen", this.row).forEach(function (obj) {
+			obj.addEventListener("click", showSeenToggle, false);
+		});
+		
 		// function to show more
 		function showMore () {
 			if (self.showall = !self.showall) {
-				this.textContent = "[show less thumbs < ]";
+				this.textContent = "[show less < ]";
 				self.videoList.style.padding = "80px 0";
 			} else {
-				this.textContent = "[show more thumbs > ]";
+				this.textContent = "[show more > ]";
 				self.videoList.style.padding = "";
 			}
 			self.buildList();
@@ -556,6 +573,12 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	
 	// methods
 	Subscription.prototype = {
+		
+		updateurl: "",
+		showall: false,
+		needsUpdate: true,
+		isInView: false,
+		ignoreHideSeen: false,
 		
 		// builds a new list of videos
 		buildList: function () {
@@ -573,7 +596,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 			objLoop(this.videos, function (video) {
 				
 				// if that video is removed search for it
-				if (video.isRemoved()) {
+				if (video.isRemoved( this.ignoreHideSeen )) {
 					var thumb = $( "#YTBSPthumb_"+video.vid, this.videoList, true )[0],
 						index = alreadyIn.indexOf( thumb );
 					if (thumb && index !== -1) {
@@ -968,8 +991,8 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 			if (unremovedVideos.hasOwnProperty(infos.vid)) this.removed = false;
 		},
 		
-		isRemoved: function () {
-			return this.removed || (hideSeen && this.isSeen());
+		isRemoved: function ( ignoreHideSeen ) {
+			return this.removed || (!ignoreHideSeen && hideSeen && this.isSeen());
 		},
 		
 		remove: function (privat) {
@@ -1264,9 +1287,13 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		+ '#YTBSP.large .ytbsp-video-item { margin-right: 10px; }'
 		+ '.ytbsp-video-item a { display: block; height: 30px; overflow: hidden; cursor: pointer; }'
 		+ '.ytbsp-video-item:hover { background-color: '+lightColor+'; border-bottom-color: '+midColor+'; -webkit-transition: none; -moz-transition: none; }'
-		+ '.ytbsp-subinfo { line-height: 25px; padding: 0 5px; margin-bottom: 4px; -moz-border-radius: 5px; border-radius: 5px;'
+		+ '.ytbsp-subinfo { line-height: 25px; height: 25px; padding: 0 5px; margin-bottom: 4px; -moz-border-radius: 5px; border-radius: 5px;'
 			+ 'border: 1px solid '+lightColor+'; -moz-box-shadow: 0 0 0 1px '+midColor+', 0 3px 10px '+shadow+'; box-shadow: 0 0 0 1px '+midColor+', 0 3px 10px '+shadow+' }'
 		+ '.ytbsp-subinfo h3 { display: inline; }'
+		+ '.ytbsp-subscription .func { visibility: hidden; }'
+		+ '.ytbsp-subscription:hover .func { visibility: visible; }'
+		+ '#YTBSP .func.showseen { display: none; }'
+		+ '#YTBSP.hideseen .func.showseen { display: inline; }'
 		+ '#YTBSP .right { float: right; }'
 	
 		// links
@@ -1301,8 +1328,9 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		
 		// modal
 		 + '#ytbsp-modal-darken { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,.4); z-index: 1000;'
-		 	+ ' -webkit-transition: opacity .2s; -moz-transition: opacity .2s; -o-transition: opacity .2s; opacity: 0; overflow: auto; display: none; }'
-		 + '#ytbsp-modal { margin: 0 auto; width: 600px; min-height: 20px; margin-top: 30px; padding: 5px; background: #fff; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,.4); }'
+		 	+ '-webkit-transition: opacity .2s; -moz-transition: opacity .2s; -o-transition: opacity .2s; opacity: 0; overflow: auto; display: none; }'
+		 + '#ytbsp-modal { margin: 0 auto; width: 600px; min-height: 20px; margin-top: 30px; padding: 5px; background: #fff;'
+		 	+ '-moz-border-radius: 5px; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,.4); }'
 		 + '#ytbsp-modal textarea { width: 595px; height: 500px; resize: none; margin: 20px 0; }';
 		
 		document.head.appendChild(css);
