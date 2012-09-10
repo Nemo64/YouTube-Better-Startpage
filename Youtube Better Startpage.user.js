@@ -229,11 +229,13 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		screenBottom = screenTop + window.innerHeight,
 		
 		cache = localStorage.getItem("YTBSP"),
+		sortSubs = localStorage.getItem("YTBSPsort"),
 		hideSeen = localStorage.getItem("YTBSPhideSeen"),
 		hideSubs = localStorage.getItem("YTBSPhide"),
 		showSide = localStorage.getItem("YTBSPshowSide");
 	
 	// parse the config
+	sortSubs = sortSubs == null || sortSubs == "1";
 	hideSeen = hideSeen == "1";
 	hideSubs = hideSubs == "1";
 	showSide = showSide == null || showSide == "1";
@@ -250,7 +252,10 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	var content, old;
 	
 	// create an div for us
-	var headtext = '<span class="func shownative">[toggle native startpage]</span> <span class="func unremove">[reset removed videos]</span> <span class="func backup">[backup video info]</span> '
+	var headtext = '<span class="func shownative">[toggle native startpage]</span> '
+		+ '<span class="func unremove">[reset removed videos]</span> '
+		+ '<span class="func backup">[backup video info]</span>'
+		+ '<input type="checkbox" class="func sort" ' + (sortSubs ? 'checked="checked" ':'') + '/><span class="func sort">Sort videos</span>'
 		+ '<input type="checkbox" class="func hideSeen" ' + (hideSeen ? 'checked="checked" ':'') + '/><span class="func hideSeen">Hide seen videos</span>'
 		+ '<input type="checkbox" class="func hide" ' + (hideSubs ? '':'checked="checked" ') + '/><span class="func hide">Show empty</span>'
 		+ '<input type="checkbox" class="func side" ' + (showSide ? 'checked="checked" ':'') + '/><span class="func side">Show sidebar</span>',
@@ -297,6 +302,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 			// make sure YouTube doesn't change the fact that the bar floats
 			sidebar.style.float = "right";
 			sidebar.style.maxWidth = "300px";
+			sidebar.style.margin = "20px 0";
 			sidebar.style.display = showSide ? "block" : "none";
 		}, 1);
 	}, 1);
@@ -327,7 +333,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	// unremove videos button
 	function unremoveAllVideos () {
 		var toRebuild = {};
-		objLoop(allVideos, function (video, vid) {
+		objLoop(allVideos, function (video) {
 			if (video.isRemoved()) {
 				video.unremove();
 				video.subscriptions.forEach(function (subscription) {
@@ -416,6 +422,15 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		obj.addEventListener("click", hideSeenVideos, false);
 	});
 	
+	// sort videos buttons
+	function sortVideos () {
+		localStorage.setItem("YTBSPsort", sortSubs ? "0" : "1");
+		location.reload();
+	}
+	$(".func.sort", maindiv).forEach(function (obj) {
+		obj.addEventListener("click", sortVideos, false);
+ 	});
+
 	// hide empty subscriptions button
 	function hideSubsFunc () {
 		localStorage.setItem("YTBSPhide", hideSubs ? "0" : "1");
@@ -487,8 +502,8 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		// create content
 		this.row.innerHTML = '<div class="ytbsp-subinfo">'
 		+ '<div class="right"><span class="func removeall">[remove all]</span> <span class="func reset">[unremove all]</span>'
-		+ ' <span class="func allseen">[mark all as seen]</span> <span class="func showseen">[show seen > ]</span>'
-		+ ' <span class="func showmore">[show more &gt; ]</span></div>'
+		+ ' <span class="func allseen">[mark all as seen]</span> <span class="func showseen">[show seen]</span>'
+		+ ' <span class="func showmore">[show more]</span></div>'
 		+ '<div class="ytbsp-loaderph">' + AJAXLOADER + '</div><h3 class="ytbsp-subtitle"><a href="'+this.href+'"></a></h3>'
 		+ '</div><ul class="ytbsp-subvids"></ul><div style="clear:both"></div>';
 		
@@ -544,7 +559,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		// function to show seen videos
 		function showSeenToggle () {
 			self.ignoreHideSeen = !self.ignoreHideSeen;
-			this.textContent = self.ignoreHideSeen ? "[hide seen < ]" : "[show seen > ]";
+			this.style.color = self.ignoreHideSeen ? "#000" : null;
 			self.buildList();
 		}
 		$(".func.showseen", this.row).forEach(function (obj) {
@@ -554,10 +569,10 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		// function to show more
 		function showMore () {
 			if (self.showall = !self.showall) {
-				this.textContent = "[show less < ]";
+				this.style.color = "#000";
 				self.videoList.style.padding = "80px 0";
 			} else {
-				this.textContent = "[show more > ]";
+				this.style.color = null;
 				self.videoList.style.padding = "";
 			}
 			self.buildList();
@@ -1213,18 +1228,20 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		});
 		
 		// now sort the subscriptions
-		// get the video item names for sorting
-		var names = {}, count = 1;
-		$("#vm-video-list-container .yt-user-name", dom).forEach(function (item) {
-			var name = strip(item.textContent);
-			if (!names.hasOwnProperty(name)) {
-				names[name] = count++;
-			}
-		});
+		if (sortSubs) {
+			// get the video item names for sorting
+			var names = {}, count = 1;
+			$("#vm-video-list-container .yt-user-name", dom).forEach(function (item) {
+				var name = strip(item.textContent);
+				if (!names.hasOwnProperty(name)) {
+					names[name] = count++;
+				}
+			});
 		
-		subscriptions.sort(function (a, b) {
-			return (names[a.name] || count) - (names[b.name] || count);
-		});
+			subscriptions.sort(function (a, b) {
+				return (names[a.name] || count) - (names[b.name] || count);
+			});
+		}
 		
 		// create subscription objects
 		subscriptions.forEach(function (sub) {
@@ -1272,8 +1289,8 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		
 		css.innerHTML =
 		// header and footer
-		  '#ytbsp-header { margin-bottom: 20px; }'
-		+ '#ytbsp-footer { margin-top: 20px; clear: both; }'
+		  '#ytbsp-header { margin-bottom: 20px; white-space: nowrap; }'
+		+ '#ytbsp-footer { margin-top: 20px; clear: both; white-space: nowrap; }'
 	
 		// overall list
 		+ '#ytbsp-subs { float: left; width: 650px; box-shadow: 40px 0 30px -30px '+shadow+'; -moz-box-shadow: 40px 0 30px -30px '+shadow+';'
@@ -1290,8 +1307,6 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		+ '.ytbsp-subinfo { line-height: 25px; height: 25px; padding: 0 5px; margin-bottom: 4px; -moz-border-radius: 5px; border-radius: 5px;'
 			+ 'border: 1px solid '+lightColor+'; -moz-box-shadow: 0 0 0 1px '+midColor+', 0 3px 10px '+shadow+'; box-shadow: 0 0 0 1px '+midColor+', 0 3px 10px '+shadow+' }'
 		+ '.ytbsp-subinfo h3 { display: inline; }'
-		+ '.ytbsp-subscription .func { visibility: hidden; }'
-		+ '.ytbsp-subscription:hover .func { visibility: visible; }'
 		+ '#YTBSP .func.showseen { display: none; }'
 		+ '#YTBSP.hideseen .func.showseen { display: inline; }'
 		+ '#YTBSP .right { float: right; }'
