@@ -1242,6 +1242,14 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 			subscriptions.sort(function (a, b) {
 				return (names[a.name] || count) - (names[b.name] || count);
 			});
+		
+		// sort (to be sure) after name
+		} else {
+			subscriptions.sort(function (a, b) {
+				return (a.name > b.name) ? 1
+					: (a.name < b.name) ? -1
+					: 0;
+			});
 		}
 		
 		// create subscription objects
