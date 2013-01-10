@@ -6,7 +6,7 @@
 // @include         https://*youtube.com*
 // @run-at          document-start
 // @unwrap
-// @version         2012.10-1
+// @version         2013.1-1
 // ==/UserScript==
 
 /**
@@ -45,7 +45,7 @@ var LOADATTHESAMETIME = 10, // DEFAULT: 10 (higher numbers result into slower lo
 
 
 // resources
-	VERSION = "2012.10-1",
+	VERSION = "2013.1-1",
 	UPDATEURL = "http://sett.bplaced.net/userscripts/YTBSP/version.json",
 	AJAXLOADER = '<img alt="..." class="ytbsp-ajaxloader" src="data:image/gif;base64,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" />',
 // slectors
@@ -299,6 +299,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		
 		// force the youtube style to behave (the new one)
 		content.style.minWidth = "850px";
+		old.style.maxWidth = "641px";
 		
 		// reposition the sidebar
 		callForEach(VIDEO_SIDEBAR, function (sidebar) {
@@ -1289,40 +1290,39 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	function addStyleSheet () {
 		
 		// check if we got a dark design
-		var color = getComputedStyle(document.body).backgroundColor.match(/\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/),
-			dark = color && (parseInt(color[1])+parseInt(color[2])+parseInt(color[3])) < 384,
-			lightColor = dark ? "rgba(255,255,255,.2)" : "#fff",
-			midColor = dark ? "#444" : "#ccc",
-			darkColor = dark ? "#aaa" : "#1c629e",
-			shadow = "rgba(64,64,64,.1)";
+		var color = getComputedStyle(document.body).backgroundColor.match(/\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+		var dark = color && (parseInt(color[1])+parseInt(color[2])+parseInt(color[3])) < 384;
+		var lightColor = dark ? "rgba(255,255,255,.2)" : "#e2e2e2";
+		var midColor = dark ? "#444" : "#ADADAD";
+		var darkColor = dark ? "#aaa" : "#1c629e";
+		var fontColor = "#333";
+		var fontHoverColor = "#438BC5";
 		
 		css.innerHTML =
 		// header and footer
-		  '#ytbsp-header { margin-bottom: 20px; white-space: nowrap; }'
-		+ '#ytbsp-footer { margin-top: 20px; clear: both; white-space: nowrap; }'
+		  '#ytbsp-header { margin: 20px 9px; white-space: nowrap; }'
+		+ '#ytbsp-footer { margin: 20px 9px; clear: both; white-space: nowrap; }'
+		+ '#YTBSP input { vertical-align: text-top; }'
 	
 		// overall list
-		+ '#ytbsp-subs { float: left; width: 650px; box-shadow: 40px 0 30px -30px '+shadow+'; -moz-box-shadow: 40px 0 30px -30px '+shadow+';'
-			+ 'overflow: hidden; margin: -30px 0 0 -30px; padding: 30px 10px 10px 30px; }'
-		+ '#YTBSP.large #ytbsp-subs { width: 970px; box-shadow: none; -moz-box-shadow: none; }'
-		+ '.ytbsp-subscription { display: block; clear: both; }'
+		+ '#ytbsp-subs { float: left; width: 660px; overflow: hidden; margin: -30px 0 0 -30px; padding: 30px 10px 10px 30px; }'
+		+ '#YTBSP.large #ytbsp-subs { width: 980px; box-shadow: none; -moz-box-shadow: none; }'
+		+ '.ytbsp-subscription { display: block; clear: both; border: 1px solid '+lightColor+'; background-color: #fff; padding: 0 4px 10px; margin-top: -1px; }'
+		+ '.ytbsp-subscription:hover { background-color: #FBFBFB }'
 		+ '.ytbsp-subvids { -webkit-transition: padding .1s ease-out; -moz-transition: padding .1s ease-out; -o-transition: padding .1s ease-out; }'
 		+ '#YTBSP.large .ytbsp-subvids { margin-right: -10px; }'
-		+ '.ytbsp-video-item { display: inline-block; vertical-align:top; width: 122px; height: 145px; padding: 5px 4px; margin: 0 0 4px;'
-			+ 'border-bottom: 1px solid rgba(204,204,204, 0); cursor: default; overflow: hidden; }'
+		+ '.ytbsp-video-item { display: inline-block; vertical-align: top; width: 122px; padding: 0 4px; cursor: default; overflow: hidden; }'
 		+ '#YTBSP.large .ytbsp-video-item { margin-right: 10px; }'
 		+ '.ytbsp-video-item a { display: block; height: 2.4em; line-height: 1.2em; overflow: hidden; cursor: pointer; }'
-		+ '.ytbsp-video-item:hover { background-color: '+lightColor+'; border-bottom-color: '+midColor+'; -webkit-transition: none; -moz-transition: none; }'
-		+ '.ytbsp-subinfo { line-height: 25px; height: 25px; padding: 0 5px; margin-bottom: 4px; -moz-border-radius: 5px; border-radius: 5px;'
-			+ 'border: 1px solid '+lightColor+'; -moz-box-shadow: 0 0 0 1px '+midColor+', 0 3px 10px '+shadow+'; box-shadow: 0 0 0 1px '+midColor+', 0 3px 10px '+shadow+' }'
+		+ '.ytbsp-subinfo { line-height: 25px; height: 25px; margin: 4px 4px 3px; }'
 		+ '.ytbsp-subinfo h3 { display: inline; }'
 		+ '#YTBSP .func.showseen { display: none; }'
 		+ '#YTBSP.hideseen .func.showseen { display: inline; }'
 		+ '#YTBSP .right { float: right; }'
 	
 		// links
-		+ '#ytbsp-subs a { color: #333; font-weight: bold; }'
-		+ '#ytbsp-subs a:hover, .ytbsp-video-item:hover a { color: '+darkColor+'; }'
+		+ '#ytbsp-subs a { color: '+fontColor+'; font-weight: bold; }'
+		+ '#ytbsp-subs a:hover, .ytbsp-video-item:hover a { color: '+fontHoverColor+'; }'
 	
 		// image part
 		+ '.ytbsp-clip { position: relative; width: 120px; height: 68px; overflow: hidden; border: 1px solid '+lightColor+'; }'
@@ -1335,15 +1335,17 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		+ '.ytbsp-video-item:hover .video-time { display: none; }'
 	
 		// infos
-		+ '.ytbsp-seemarker { border: 1px solid '+lightColor+'; border-bottom-color: #69c; -moz-border-radius: 6px; border-radius: 6px; background-color: #def;'
-			+ ' line-height: 14px; opacity: 0; text-align: center; cursor: pointer; }'
-		+ '.ytbsp-video-item:hover .ytbsp-seemarker { opacity: .2; }'
+		+ '.ytbsp-seemarker { background-color: #6891E7; background-image: linear-gradient(to bottom,#5384BE 0,#3F76B7 100%);'
+			+ ' background-image: -moz-linear-gradient(top,#5384BE 0,#3F76B7 100%); background-image: -webkit-linear-gradient(top,#5384BE 0,#3F76B7 100%);'
+			+ ' line-height: 14px; opacity: 0; text-align: center; cursor: pointer; color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, .25);'
+			+ ' border: 1px solid #3F76B7; border-radius: 2px; padding: 1px; margin: 2px 0; }'
+		+ '.ytbsp-video-item:hover .ytbsp-seemarker { opacity: .1; }'
 		+ '.ytbsp-seemarker:hover { opacity: .4 !important; }'
 		+ '.ytbsp-seemarker.seen { opacity: 1 !important; }'
 	
 		// functionbuttons
-		+ '#YTBSP span.func { color: #777; cursor: pointer; vertical-align: top; display: inline-block; }'
-		+ '#YTBSP span.func:hover { color: #333; }'
+		+ '#YTBSP span.func { color: '+midColor+'; cursor: pointer; display: inline-block; }'
+		+ '#YTBSP span.func:hover { color: '+fontHoverColor+'; }'
 	
 		// ajax loader
 		+ '.ytbsp-loaderph { display: block; float: left; vertical-align: middle; width: 16px; height: 16px;'
@@ -1379,8 +1381,8 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	
 	// now we need an scroll event
 	// also if the window is resized it should be triggered
-	var scrollTimeout = null,
-		moved = false;
+	var scrollTimeout = null;
+	var moved = false;
 	function checkEvent () {
 	
 		if (scrollTimeout === null) {
@@ -1451,8 +1453,8 @@ function updateMessage (info) {
 	div.style.position = "absolute";
 	div.style.top = "20px";
 	div.style.right = "20px";
-	div.style.backgroundColor = "#ccc";
-	div.style.border = "1px solid #fff";
+	div.style.backgroundColor = "#e2e2e2";
+	div.style.border = "1px solid #adadad";
 	div.style.whiteSpace = "nowrap";
 	div.style.zIndex = "9999";
 	div.style.padding = "10px";
