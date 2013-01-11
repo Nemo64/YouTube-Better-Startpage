@@ -1305,13 +1305,12 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	
 		// overall list
 		+ '#ytbsp-subs { float: left; width: 660px; overflow: hidden; margin: -30px 0 0 -30px; padding: 31px 10px 10px 30px; }'
-		+ '#YTBSP.large #ytbsp-subs { width: 980px; box-shadow: none; -moz-box-shadow: none; }'
+		+ '#YTBSP.large #ytbsp-subs { width: 920px; box-shadow: none; -moz-box-shadow: none; }'
 		+ '.ytbsp-subscription { display: block; clear: both; border: 1px solid '+lightColor+'; background-color: #fff; padding: 0 4px; margin-top: -1px; }'
 		+ '.ytbsp-subscription:hover { background-color: #FBFBFB }'
 		+ '.ytbsp-subvids { -webkit-transition: padding .1s ease-out; -moz-transition: padding .1s ease-out; -o-transition: padding .1s ease-out; }'
 		+ '#YTBSP.large .ytbsp-subvids { margin: 0 -10px 10px 0; }'
 		+ '.ytbsp-video-item { display: inline-block; vertical-align: top; width: 122px; padding: 0 4px; cursor: default; overflow: hidden; }'
-		+ '#YTBSP.large .ytbsp-video-item { margin-right: 10px; }'
 		+ '.ytbsp-video-item a { display: block; height: 2.4em; line-height: 1.2em; overflow: hidden; cursor: pointer; }'
 		+ '.ytbsp-subinfo { line-height: 25px; height: 25px; margin: 4px 4px 3px; }'
 		+ '.ytbsp-subinfo h3 { display: inline; }'
