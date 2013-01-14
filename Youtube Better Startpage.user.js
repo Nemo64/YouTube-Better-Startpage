@@ -5,7 +5,7 @@
 // @include         https://*youtube.com*
 // @run-at          document-start
 // @unwrap
-// @version         2013.1-2
+// @version         2013.1-3
 // ==/UserScript==
 
 /**
@@ -44,7 +44,7 @@ var LOADATTHESAMETIME = 10, // DEFAULT: 10 (higher numbers result into slower lo
 
 
 // resources
-	VERSION = "2013.1-2",
+	VERSION = "2013.1-3",
 	UPDATEURL = "http://sett.bplaced.net/userscripts/YTBSP/version.json",
 	AJAXLOADER = '<img alt="..." class="ytbsp-ajaxloader" src="data:image/gif;base64,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" />',
 // slectors
@@ -79,8 +79,8 @@ function callForEach (selector, callback, limit) {
 	// if the document hasn't fully loaded yet
 	if ((!limit || elements.length < limit) && document.readyState !== "complete") {
 	
-		// will be called for every time a node is inserted into the document
-		function nodeInserted () {
+		// will be called on document load
+		function onload () {
 			
 			var i = elements.length;
 			elements = $( selector, document, true );
@@ -92,18 +92,10 @@ function callForEach (selector, callback, limit) {
 			
 			// if the limit has been reached stop listening to these events
 			if (limit && elements.length >= limit) {
-				document.removeEventListener("DOMNodeInserted", nodeInserted, false);
 				document.removeEventListener("DOMContentLoaded", onload, false);
 			}
 		}
-		
-		// will be called on document load
-		function onload () {
-			document.removeEventListener("DOMNodeInserted", nodeInserted, false); // remove listener for performance
-			nodeInserted(); // protent there was a node inserted
-		}
-		document.addEventListener("DOMNodeInserted", nodeInserted, false); // bind only if matchSelector is available
-		document.addEventListener("DOMContentLoaded", onload, false); // for some checking after domload
+		document.addEventListener("DOMContentLoaded", onload, false);
 	}
 }
 
@@ -1291,7 +1283,9 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		// check if we got a dark design
 		var color = getComputedStyle(document.body).backgroundColor.match(/\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
 		var dark = color && (parseInt(color[1])+parseInt(color[2])+parseInt(color[3])) < 384;
-		var lightColor = dark ? "rgba(255,255,255,.2)" : "#e2e2e2";
+		var white = dark ? "transparent" : "#fff";
+		var whiteHover = dark ? "#111" : "#FBFBFB";
+		var lightColor = dark ? "#333" : "#e2e2e2";
 		var midColor = dark ? "#444" : "#ADADAD";
 		var darkColor = dark ? "#aaa" : "#1c629e";
 		var fontColor = "#333";
@@ -1306,10 +1300,10 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		// overall list
 		+ '#ytbsp-subs { float: left; width: 660px; overflow: hidden; margin: -30px 0 0 -30px; padding: 31px 10px 10px 30px; }'
 		+ '#YTBSP.large #ytbsp-subs { width: 920px; box-shadow: none; -moz-box-shadow: none; }'
-		+ '.ytbsp-subscription { display: block; clear: both; border: 1px solid '+lightColor+'; background-color: #fff; padding: 0 4px; margin-top: -1px; }'
-		+ '.ytbsp-subscription:hover { background-color: #FBFBFB }'
+		+ '.ytbsp-subscription { display: block; clear: both; border: 1px solid '+lightColor+'; background-color: '+white+'; padding: 0 4px; margin-top: -1px; }'
+		+ '.ytbsp-subscription:hover { background-color: '+whiteHover+' }'
 		+ '.ytbsp-subvids { margin: 10px 0; -webkit-transition: padding .1s ease-out; -moz-transition: padding .1s ease-out; -o-transition: padding .1s ease-out; }'
-		+ '.ytbsp-video-item { display: inline-block; vertical-align: top; width: 122px; padding: 0 4px; cursor: default; overflow: hidden; }'
+		+ '.ytbsp-video-item { display: inline-block; vertical-align: top; width: 122px; height: 152px; padding: 0 4px; cursor: default; overflow: hidden; }'
 		+ '.ytbsp-video-item a { display: block; height: 2.4em; line-height: 1.2em; overflow: hidden; cursor: pointer; }'
 		+ '.ytbsp-subinfo { line-height: 25px; height: 25px; margin: 4px 4px 3px; }'
 		+ '.ytbsp-subinfo h3 { display: inline; }'
@@ -1352,7 +1346,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		// modal
 		 + '#ytbsp-modal-darken { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,.4); z-index: 1000;'
 		 	+ '-webkit-transition: opacity .2s; -moz-transition: opacity .2s; -o-transition: opacity .2s; opacity: 0; overflow: auto; display: none; }'
-		 + '#ytbsp-modal { margin: 0 auto; width: 600px; min-height: 20px; margin-top: 30px; padding: 5px; background: #fff;'
+		 + '#ytbsp-modal { margin: 0 auto; width: 600px; min-height: 20px; margin-top: 30px; padding: 5px; background: '+lightColor+';'
 		 	+ '-moz-border-radius: 5px; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,.4); }'
 		 + '#ytbsp-modal textarea { width: 595px; height: 500px; resize: none; margin: 20px 0; }';
 		
