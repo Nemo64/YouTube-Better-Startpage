@@ -5,7 +5,7 @@
 // @include         https://*youtube.com*
 // @run-at          document-start
 // @unwrap
-// @version         2013.1-3
+// @version         2013.1-3-fix1
 // ==/UserScript==
 
 /**
@@ -1298,7 +1298,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		+ '#YTBSP input { vertical-align: text-top; }'
 	
 		// overall list
-		+ '#ytbsp-subs { float: left; width: 660px; overflow: hidden; margin: -30px 0 0 -30px; padding: 31px 10px 10px 30px; }'
+		+ '#ytbsp-subs { float: left; width: 660px; overflow: hidden; margin: -30px 0 0 -30px; padding: 31px 0px 10px 30px; }'
 		+ '#YTBSP.large #ytbsp-subs { width: 920px; box-shadow: none; -moz-box-shadow: none; }'
 		+ '.ytbsp-subscription { display: block; clear: both; border: 1px solid '+lightColor+'; background-color: '+white+'; padding: 0 4px; margin-top: -1px; }'
 		+ '.ytbsp-subscription:hover { background-color: '+whiteHover+' }'
