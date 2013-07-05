@@ -710,7 +710,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 					});
 				
 					// now extend the information we already have
-					var headerData = response.match(/<div[^>]+id="vm-page-subheader"[^>]*>\s*<h3>\s*<a[^>]+href="([^"]*)"/i);
+					var headerData = response.match(/<div[^>]+id="?vm-page-subheader"?[^>]*>\s*<h3[^>]*>\s*<a[^>]+href="([^"]*)"/i);
 					self.href = headerData == null ? "Javascript: alert('url not found, sorry!')" : headerData[1];
 					self.titleObj.href = self.href;
 				
