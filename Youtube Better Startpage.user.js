@@ -5,7 +5,7 @@
 // @include         https://*youtube.com*
 // @run-at          document-start
 // @unwrap
-// @version         2013.7-1
+// @version         2013.8-1
 // ==/UserScript==
 
 /**
@@ -44,7 +44,7 @@ var LOADATTHESAMETIME = 10, // DEFAULT: 10 (higher numbers result into slower lo
 
 
 // resources
-	VERSION = "2013.7-1",
+	VERSION = "2013.8-1",
 	UPDATEURL = "http://sett.bplaced.net/userscripts/YTBSP/version.json",
 	AJAXLOADER = '<img alt="..." class="ytbsp-ajaxloader" src="data:image/gif;base64,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" />',
 // slectors
@@ -121,10 +121,10 @@ function ajax (url, callback, onerror) {
 		var req = new XMLHttpRequest(),
 			errorTimeout;
 		
-		function error () {
+		function error (e) {
 			if (req.abort) req.abort();
 			if (typeof onerror === "function") onerror.call(req);
-			console.error('Request for "' + url + '" failed');
+			console.error('Request for "' + url + '" failed', e);
 			loadTrigger();
 		}
 		
@@ -140,7 +140,7 @@ function ajax (url, callback, onerror) {
 				try {
 					callback.call( this, this.responseText );
 				} catch (e) {
-					error();
+					error( e );
 				}
 				--loading;
 				loadTrigger();
@@ -671,36 +671,35 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 			var self = this;
 			if (this.updateurl) {
 				ajax(this.updateurl, function (response) {
+					response = JSON.parse( response );
 				
-					var dom = createDOM(response, /<ol[^>]+id="vm-playlist-video-list-ol"[^>]*>([\s\S]*)<\/ol>/i);
+					var dom = createDOM(response["content_html"]);
 					var oldVideos = self.videos;
 					self.videos = {};
-				
-					// get the video items
-					$( ".vm-video-item", dom, true ).forEach(function (item) {
-
-						var thumb  = $(".yt-thumb-clip img", item)[0],
-							time   = $(".video-time", item)[0],
-							title  = $(".vm-video-title a", item)[0],
-							upload = $(".vm-video-info:nth-of-type(2)", item)[0],
-							clicks = $(".vm-video-metrics dd:first-of-type", item)[0],
-							vid = title.href.match(/v=([^&]{11})/)[1];
-
+					
+					$( "[data-context-item-type=video]", dom, true ).forEach( function ( item ) {
+						var thumb  = $( "*[class*=yt-thumb] img", item )[0];
+						var time   = item.getAttribute( "data-context-item-time" );
+						var title  = item.getAttribute( "data-context-item-title" );
+						var upload = null; // FIXME not available for now
+						var clicks = item.getAttribute( "data-context-item-views" );
+						var vid    = item.getAttribute( "data-context-item-id" );
+						
 						self.videos[vid] = getVideo(self, {
 							vid:   vid,
-							title: strip(title.textContent),
+							title: strip(title),
 							thumb:    thumb  ? thumb.getAttribute("data-src") : "",
-							duration: time   ? strip(time.textContent)        : "0:00",
-							uploaded: upload ? strip(upload.textContent)      : "not found",
-							clicks:   clicks ? strip(clicks.textContent)      : "NaN"
+							duration: time   ? strip(time)        : "0:00",
+							uploaded: upload ? strip(upload)      : "missing upload time",
+							clicks:   clicks ? strip(clicks)      : "missing click count"
 						});
 						
 						// if this video was there before
 						if (oldVideos.hasOwnProperty( vid )) {
 							delete oldVideos[vid];
 						}
-					});
-					
+					} );
+				
 					// attach KEEPFORSAFETY old Videos to the list
 					var count = 0;
 					objLoop(oldVideos, function (video, vid) {
@@ -708,11 +707,6 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 							self.videos[vid] = video;
 						}
 					});
-				
-					// now extend the information we already have
-					var headerData = response.match(/<div[^>]+id="?vm-page-subheader"?[^>]*>\s*<h3[^>]*>\s*<a[^>]+href="([^"]*)"/i);
-					self.href = headerData == null ? "Javascript: alert('url not found, sorry!')" : headerData[1];
-					self.titleObj.href = self.href;
 				
 					// remove the dom to reduce memory use
 					dom = null;
@@ -1087,7 +1081,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 					+ '<img src="//s.ytimg.com/yt/img/pixel-vfl3z5WfW.gif"></span></button>'
 				+ '<div class="video-time">' + this.duration + '</div></div><a class="vlink" href="/watch?v=' + this.vid + '"></a>'
 				+ '<div class="ytbsp-seemarker' + (this.isSeen() ? ' seen">already seen' : '">mark as seen') + '</div>'
-				+ '<p class="ytbsp-views">' + this.clicks + ' Views</p><p class="ytbsp-uploaded">' + this.uploaded + '</p>';
+				+ '<p class="ytbsp-views">' + this.clicks + '</p><p class="ytbsp-uploaded">' + this.uploaded + '</p>';
 			
 			// create references to objects
 			this.durationItem = $( ".video-time", thumb )[0];
@@ -1115,7 +1109,7 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		updateThumb: function (thumb) {
 			
 			this.durationItem.textContent = this.duration;
-			this.clicksItem.textContent   = this.clicks + " Views";
+			this.clicksItem.textContent   = this.clicks;
 			this.uploadItem.textContent   = this.uploaded;
 			this.titleItem.textContent    = this.title;
 		},
@@ -1205,38 +1199,24 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 	// everything starts here
 	// !!!!!!!!!!!!!!!!!!!!!!
 	
-	ajax("/my_subscriptions?dm=0", function (string) {
-		
-		var dom = createDOM(string);
-		
+	callForEach( "#guide-channels", function ( guide ) {
+	
 		// remove the current content
 		subList.innerHTML = "";
 		
-		
-		// now look for the subscription links and put them into an array that will be sorted
+		var guideItems = $( ".guide-item", guide );
 		var subscriptions = [];
-		$("[id^=yt-admin-sidebar] ol > li:not(:first-child) a", dom).forEach(function (obj) {
-			
-			subscriptions.push({name: strip(obj.textContent), url: obj.href + "&dm=0"});
-		});
-		
-		// now sort the subscriptions
-		if (sortSubs) {
-			// get the video item names for sorting
-			var names = {}, count = 1;
-			$("[id^=vm-video-list] .yt-user-name", dom).forEach(function (item) {
-				var name = strip(item.textContent);
-				if (!names.hasOwnProperty(name)) {
-					names[name] = count++;
-				}
+		guideItems.forEach( function ( item ) {
+			var displayName = $( ".display-name", item )[0];
+			subscriptions.push({
+				name: displayName ? displayName.textContent : "Name not found",
+				id: item.getAttribute( "data-channel-id" ),
+				url: item.href
 			});
-		
-			subscriptions.sort(function (a, b) {
-				return (names[a.name] || count) - (names[b.name] || count);
-			});
+		} );
 		
 		// sort (to be sure) after name
-		} else {
+		if (!sortSubs) {
 			subscriptions.sort(function (a, b) {
 				return (a.name > b.name) ? 1
 					: (a.name < b.name) ? -1
@@ -1246,22 +1226,26 @@ if (/^\/?(guide|home|index)?$/i.test(location.pathname)) {
 		
 		// create subscription objects
 		subscriptions.forEach(function (sub) {
+			if ( !sub.id ) {
+				console.error( sub );
+				return;
+			}
 		
 			// create an object with this informations
 			var csub = subs[sub.name] = new Subscription( sub.name );
-			csub.updateurl = sub.url;
-			updateSubs();
+			csub.updateurl = "http://www.youtube.com/c4_browse_ajax?action_load_more_videos=1&sort=dd&channel_id="
+				+ sub.id + "&live_view=500&paging=1&view=0&flow=grid&fluid=True";
+			csub.href = sub.url;
+			csub.titleObj.href = csub.href;
 		});
-		
-		// free the browser of informations we don't need anymore
-		dom = cache = null
+		updateSubs();
 	
 		// do some things for tab communication
 		registerChangeEvent();
 		getChangedVideos();
 		integrateChangedVideos();
 		cleanUp();
-	});
+	}, 1 );
 	
 	
 	
